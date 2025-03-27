@@ -16,12 +16,13 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 
 function SortableSection({ id, children }: { id: string; children: React.ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  }
+  };
 
   return (
     <div
@@ -29,11 +30,16 @@ function SortableSection({ id, children }: { id: string; children: React.ReactNo
       style={style}
       {...attributes}
       {...listeners}
-      className="cursor-move"
+      className={`
+        cursor-move rounded-md p-4 transition
+        border border-transparent
+        hover:border-blue-300 hover:shadow-md hover:scale-[1.01]
+        ${isDragging ? 'animate-pulse opacity-70' : ''}
+      `}
     >
       {children}
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -52,8 +58,8 @@ export default function App() {
   const handlePrint = () => window.print()
 
   return (
-    <main className="min-h-screen bg-white text-black p-6 md:p-12">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 md:p-12">
+      <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
         {/* PDF & Controls */}
         <div className="flex justify-end mb-4 print:hidden">
           <button
@@ -100,7 +106,7 @@ export default function App() {
             <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
               {sections.map((section) => (
                 <SortableSection key={section.id} id={section.id}>
-                  <section>
+                  <section className="transition-all duration-300 ease-in-out">
                     <h2>{section.title}</h2>
                     <textarea
                       className="w-full h-32 border rounded p-2 font-mono mb-2 print:hidden"
