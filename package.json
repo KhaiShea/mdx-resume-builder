@@ -34,6 +34,8 @@
     "vite-plugin-static-copy": "^2.3.0"
   },
   "dependencies": {
-    "@vitejs/plugin-vue": "^5.2.3"
+    "@vitejs/plugin-vue": "^5.2.3",
+    "react-markdown": "^10.1.0",
+    "zustand": "^5.0.3"
   }
 }

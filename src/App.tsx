@@ -1,25 +1,20 @@
-import Resume from './resume.mdx'
+import { useResumeStore } from './store/useResumeStore'
+import ReactMarkdown from 'react-markdown'
 
 export default function App() {
-  const handlePrint = () => window.print()
+  const { name, font, sections } = useResumeStore()
 
   return (
-    <main className="min-h-screen bg-white text-black font-sans p-6 md:p-12">
-      <div className="max-w-3xl mx-auto">
-        {/* Download PDF Button (hidden on print) */}
-        <div className="flex justify-end mb-4 print:hidden">
-          <button
-            onClick={handlePrint}
-            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
-          >
-            Download PDF
-          </button>
-        </div>
+    <main className={`min-h-screen bg-white text-black ${font} p-6 md:p-12`}>
+      <div className="max-w-3xl mx-auto prose prose-neutral">
+        <h1>{name}</h1>
 
-        {/* Resume Content */}
-        <div className="prose prose-neutral">
-          <Resume />
-        </div>
+        {sections.map((section) => (
+          <section key={section.id}>
+            <h2>{section.title}</h2>
+            <ReactMarkdown>{section.content}</ReactMarkdown>
+          </section>
+        ))}
       </div>
     </main>
   )
