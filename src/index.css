@@ -22,3 +22,15 @@
     display: none !important;
   }
 }
+
+.font-sans {
+  font-family: "Inter", sans-serif;
+}
+
+.font-serif {
+  font-family: "Roboto Serif", serif;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
