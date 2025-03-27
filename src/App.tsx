@@ -1,5 +1,40 @@
 import { useResumeStore } from './store/useResumeStore'
 import ReactMarkdown from 'react-markdown'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+function SortableSection({ id, children }: { id: string; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="cursor-move"
+    >
+      {children}
+    </div>
+  )
+}
 
 export default function App() {
   const {
@@ -9,14 +44,17 @@ export default function App() {
     setName,
     setFont,
     updateSection,
+    reorderSections,
   } = useResumeStore()
+
+  const sensors = useSensors(useSensor(PointerSensor))
 
   const handlePrint = () => window.print()
 
   return (
     <main className="min-h-screen bg-white text-black p-6 md:p-12">
       <div className="max-w-3xl mx-auto">
-        {/* Download PDF Button */}
+        {/* PDF & Controls */}
         <div className="flex justify-end mb-4 print:hidden">
           <button
             onClick={handlePrint}
@@ -26,9 +64,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Resume Controls */}
         <div className="flex flex-col gap-4 mb-8 print:hidden">
-          {/* Name input */}
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -36,7 +72,6 @@ export default function App() {
             placeholder="Your Name"
           />
 
-          {/* Font selector */}
           <select
             value={font}
             onChange={(e) => setFont(e.target.value)}
@@ -48,25 +83,36 @@ export default function App() {
           </select>
         </div>
 
-        {/* Resume Preview */}
         <div className={`prose prose-neutral ${font}`}>
           <h1>{name}</h1>
 
-          {sections.map((section) => (
-            <section key={section.id}>
-              <h2>{section.title}</h2>
-
-              <textarea
-                className="w-full h-32 border rounded p-2 font-mono mb-2 print:hidden"
-                value={section.content}
-                onChange={(e) =>
-                  updateSection(section.id, e.target.value)
-                }
-              />
-
-              <ReactMarkdown>{section.content}</ReactMarkdown>
-            </section>
-          ))}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={({ active, over }) => {
+              if (active.id !== over?.id) {
+                const oldIndex = sections.findIndex(s => s.id === active.id)
+                const newIndex = sections.findIndex(s => s.id === over?.id)
+                reorderSections(arrayMove(sections, oldIndex, newIndex))
+              }
+            }}
+          >
+            <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+              {sections.map((section) => (
+                <SortableSection key={section.id} id={section.id}>
+                  <section>
+                    <h2>{section.title}</h2>
+                    <textarea
+                      className="w-full h-32 border rounded p-2 font-mono mb-2 print:hidden"
+                      value={section.content}
+                      onChange={(e) => updateSection(section.id, e.target.value)}
+                    />
+                    <ReactMarkdown>{section.content}</ReactMarkdown>
+                  </section>
+                </SortableSection>
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
       </div>
     </main>
